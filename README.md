@@ -81,6 +81,7 @@ npm install wallet-address-validator
 * Ripple/XRP, `'ripple'` or `'XRP'`
 
 * Snowgem/SNG, `'snowgem'` or `'SNG'`
+* Stellar/XLM, `'stellar'` or `'XLM'`
 
 * Vertcoin/VTC, `'vertcoin'` or `'VTC'`
 
