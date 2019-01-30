@@ -395,6 +395,13 @@ describe('WAValidator.validate()', function () {
             valid('GDD3XRXU3G4DXHVRUDH7LJM4CD4PDZTVP4QHOO4Q6DELKXUATR657OZV', 'stellar');
             valid('GDTYVCTAUQVPKEDZIBWEJGKBQHB4UGGXI2SXXUEW7LXMD4B7MK37CWLJ', 'stellar');
         });
+
+        it('should return true for correct cardano addresses', function () {
+            valid('Ae2tdPwUPEZJ4CA1ECfG6bs6s42TYAmGD1WivKapvq4goyEvTtJkWoKvfjQ', 'cardano');
+            valid('DdzFFzCqrht2DShg1SMD6ssDLLzSQM7g8MUSdcQM9Cf8M1DRjGC9Da4CfMabY4RxoVhdaGqmY2EHTfxLQqiqR2jFF5jQyqTKWGcx3KX3', 'cardano');
+            valid('DdzFFzCqrhsu8ZiYwD8EY7NdPVeCs87iMomsZxreWAJzeXwZEZtWGVVLDKHu5khHWKyEbtwWq58vkXzxhhcsRJiksXErhQivqHpQLrLz', 'cardano');
+            valid('Ae2tdPwUPEYx4T3GnQH4XE632Z5ZCMJ5SLesNTEmuJJUQJRW9z1ty4F8qfc', 'cardano');
+        });
     });
 
     describe('invalid results', function () {
@@ -621,6 +628,15 @@ describe('WAValidator.validate()', function () {
             invalid('SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY', 'stellar');
             invalid('gWRYUerEKuz53tstxEuR3NCkiQDcV4wzFHmvLnZmj7PUqxW2wt', 'stellar');
             invalid('g4VPBPrHZkfE8CsjuG2S4yBQNd455UWmk', 'stellar');
+        });
+
+        it('should return false for incorrect cardano addresses', function () {
+            commonTests('cardano');
+            invalid('Ae2tdPwUPEZJ4CA1ECfG6bs6s42TYAmGD1WivKapvq4goyEvTtJkW0KvfjQ', 'cardano');
+            invalid('Be2tdPwUPEZJ4CA1ECfG6bs6sTtJkW0KvfjQ', 'cardano');
+            invalid('LdzFFzCqrht2DShg1SMD6ssDLLzSQM7g8MUSdcQM9Cf8M1DRjGC9Da4CfMabY4RxoVhdaGqmY2EHTfxLQqiqR2jFF5jQyqTKWGcx3KX3', 'cardano');
+            invalid('DdzFFzCqrht2DShg1SMD6ssDLLzSQM7g8MUSdcQM9Cf8M1DRjGC9Da4CfMabY4Rx0VhdaGqmY2EHTfxLQqiqR2jFF5jQyqTKWGcx3KX3', 'cardano');
+            invalid('DdzFFzCqrht2DShg1SMD6ssDLLzSQM7g8MUSdcQM9Cf8M1DRjGC9Da4CfMa', 'cardano');
         });
     });
 });

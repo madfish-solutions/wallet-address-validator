@@ -4,6 +4,7 @@ var BTCValidator = require('./bitcoin_validator');
 var XMRValidator = require('./monero_validator');
 var NANOValidator = require('./nano_validator');
 var XLMValidator = require('./stellar_validator');
+var ADAValidator = require('./cardano_validator');
 
 // defines P2PKH and P2SH address types for standard (prod) and testnet networks
 var CURRENCIES = [{
@@ -214,6 +215,10 @@ var CURRENCIES = [{
     name: 'stellar',
     symbol: 'xlm',
     validator: XLMValidator,
+}, {
+    name: 'cardano',
+    symbol: 'ada',
+    validator: ADAValidator,
 }];
 
 
