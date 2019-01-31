@@ -2974,7 +2974,44 @@ module.exports = {
     }
 };
 
-},{"./crypto/base58":34,"./crypto/segwit_addr":40,"./crypto/utils":42}],34:[function(require,module,exports){
+},{"./crypto/base58":35,"./crypto/segwit_addr":42,"./crypto/utils":44}],34:[function(require,module,exports){
+var CRC = require('crc');
+var cbor = require('./crypto/cbor');
+var base58 = require('./crypto/base58');
+
+
+function getDecoded(address) {
+    try {
+        var decoded = base58.decode(address);
+        return cbor.decode(new Uint8Array(decoded).buffer);
+    } catch (e) {
+        // if decoding fails, assume invalid address
+        return null;
+    }
+}
+
+module.exports = {
+    isValidAddress: function (address) {
+        var decoded = getDecoded(address);
+
+        if (!decoded || (!Array.isArray(decoded) && decoded.length != 2)) {
+            return false;
+        }
+
+        var tagged = decoded[0];
+        var validCrc = decoded[1];
+        if (typeof (validCrc) != 'number') {
+            return false;
+        }
+
+        // get crc of the payload
+        var crc = CRC.crc32(tagged);
+
+        return crc == validCrc;
+    }
+};
+
+},{"./crypto/base58":35,"./crypto/cbor":40,"crc":28}],35:[function(require,module,exports){
 // Base58 encoding/decoding
 // Originally written by Mike Hearn for BitcoinJ
 // Copyright (c) 2011 Google Inc
@@ -3022,7 +3059,7 @@ module.exports = {
     }
 };
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 // Copyright (c) 2017 Pieter Wuille
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -3140,7 +3177,7 @@ function decode (bechString) {
   return {hrp: hrp, data: data.slice(0, data.length - 6)};
 }
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 /*
 	JavaScript BigInteger library version 0.9.1
 	http://silentmatt.com/biginteger/
@@ -4591,7 +4628,7 @@ function decode (bechString) {
     
     exports.JSBigInt = BigInteger; // exports.BigInteger changed to exports.JSBigInt
     })(typeof exports !== 'undefined' ? exports : this);
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -4782,7 +4819,7 @@ Blake256.prototype.digest = function (encoding) {
 
 module.exports = Blake256;
 }).call(this,require("buffer").Buffer)
-},{"buffer":3}],38:[function(require,module,exports){
+},{"buffer":3}],39:[function(require,module,exports){
 'use strict';
 
 /**
@@ -5059,7 +5096,395 @@ function toHex (n) {
 }
 
 module.exports = Blake2b;
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
+/*
+ * Credits to https://github.com/paroga/cbor-js
+ */
+
+(function(global, undefined) { "use strict";
+var POW_2_24 = 5.960464477539063e-8,
+    POW_2_32 = 4294967296,
+    POW_2_53 = 9007199254740992;
+
+function encode(value) {
+  var data = new ArrayBuffer(256);
+  var dataView = new DataView(data);
+  var lastLength;
+  var offset = 0;
+
+  function prepareWrite(length) {
+    var newByteLength = data.byteLength;
+    var requiredLength = offset + length;
+    while (newByteLength < requiredLength)
+      newByteLength <<= 1;
+    if (newByteLength !== data.byteLength) {
+      var oldDataView = dataView;
+      data = new ArrayBuffer(newByteLength);
+      dataView = new DataView(data);
+      var uint32count = (offset + 3) >> 2;
+      for (var i = 0; i < uint32count; ++i)
+        dataView.setUint32(i << 2, oldDataView.getUint32(i << 2));
+    }
+
+    lastLength = length;
+    return dataView;
+  }
+  function commitWrite() {
+    offset += lastLength;
+  }
+  function writeFloat64(value) {
+    commitWrite(prepareWrite(8).setFloat64(offset, value));
+  }
+  function writeUint8(value) {
+    commitWrite(prepareWrite(1).setUint8(offset, value));
+  }
+  function writeUint8Array(value) {
+    var dataView = prepareWrite(value.length);
+    for (var i = 0; i < value.length; ++i)
+      dataView.setUint8(offset + i, value[i]);
+    commitWrite();
+  }
+  function writeUint16(value) {
+    commitWrite(prepareWrite(2).setUint16(offset, value));
+  }
+  function writeUint32(value) {
+    commitWrite(prepareWrite(4).setUint32(offset, value));
+  }
+  function writeUint64(value) {
+    var low = value % POW_2_32;
+    var high = (value - low) / POW_2_32;
+    var dataView = prepareWrite(8);
+    dataView.setUint32(offset, high);
+    dataView.setUint32(offset + 4, low);
+    commitWrite();
+  }
+  function writeTypeAndLength(type, length) {
+    if (length < 24) {
+      writeUint8(type << 5 | length);
+    } else if (length < 0x100) {
+      writeUint8(type << 5 | 24);
+      writeUint8(length);
+    } else if (length < 0x10000) {
+      writeUint8(type << 5 | 25);
+      writeUint16(length);
+    } else if (length < 0x100000000) {
+      writeUint8(type << 5 | 26);
+      writeUint32(length);
+    } else {
+      writeUint8(type << 5 | 27);
+      writeUint64(length);
+    }
+  }
+
+  function encodeItem(value) {
+    var i;
+
+    if (value === false)
+      return writeUint8(0xf4);
+    if (value === true)
+      return writeUint8(0xf5);
+    if (value === null)
+      return writeUint8(0xf6);
+    if (value === undefined)
+      return writeUint8(0xf7);
+
+    switch (typeof value) {
+      case "number":
+        if (Math.floor(value) === value) {
+          if (0 <= value && value <= POW_2_53)
+            return writeTypeAndLength(0, value);
+          if (-POW_2_53 <= value && value < 0)
+            return writeTypeAndLength(1, -(value + 1));
+        }
+        writeUint8(0xfb);
+        return writeFloat64(value);
+
+      case "string":
+        var utf8data = [];
+        for (i = 0; i < value.length; ++i) {
+          var charCode = value.charCodeAt(i);
+          if (charCode < 0x80) {
+            utf8data.push(charCode);
+          } else if (charCode < 0x800) {
+            utf8data.push(0xc0 | charCode >> 6);
+            utf8data.push(0x80 | charCode & 0x3f);
+          } else if (charCode < 0xd800) {
+            utf8data.push(0xe0 | charCode >> 12);
+            utf8data.push(0x80 | (charCode >> 6)  & 0x3f);
+            utf8data.push(0x80 | charCode & 0x3f);
+          } else {
+            charCode = (charCode & 0x3ff) << 10;
+            charCode |= value.charCodeAt(++i) & 0x3ff;
+            charCode += 0x10000;
+
+            utf8data.push(0xf0 | charCode >> 18);
+            utf8data.push(0x80 | (charCode >> 12)  & 0x3f);
+            utf8data.push(0x80 | (charCode >> 6)  & 0x3f);
+            utf8data.push(0x80 | charCode & 0x3f);
+          }
+        }
+
+        writeTypeAndLength(3, utf8data.length);
+        return writeUint8Array(utf8data);
+
+      default:
+        var length;
+        if (Array.isArray(value)) {
+          length = value.length;
+          writeTypeAndLength(4, length);
+          for (i = 0; i < length; ++i)
+            encodeItem(value[i]);
+        } else if (value instanceof Uint8Array) {
+          writeTypeAndLength(2, value.length);
+          writeUint8Array(value);
+        } else {
+          var keys = Object.keys(value);
+          length = keys.length;
+          writeTypeAndLength(5, length);
+          for (i = 0; i < length; ++i) {
+            var key = keys[i];
+            encodeItem(key);
+            encodeItem(value[key]);
+          }
+        }
+    }
+  }
+
+  encodeItem(value);
+
+  if ("slice" in data)
+    return data.slice(0, offset);
+
+  var ret = new ArrayBuffer(offset);
+  var retView = new DataView(ret);
+  for (var i = 0; i < offset; ++i)
+    retView.setUint8(i, dataView.getUint8(i));
+  return ret;
+}
+
+function decode(data, tagger, simpleValue) {
+  var dataView = new DataView(data);
+  var offset = 0;
+
+  if (typeof tagger !== "function")
+    tagger = function(value) { return value; };
+  if (typeof simpleValue !== "function")
+    simpleValue = function() { return undefined; };
+
+  function commitRead(length, value) {
+    offset += length;
+    return value;
+  }
+  function readArrayBuffer(length) {
+    return commitRead(length, new Uint8Array(data, offset, length));
+  }
+  function readFloat16() {
+    var tempArrayBuffer = new ArrayBuffer(4);
+    var tempDataView = new DataView(tempArrayBuffer);
+    var value = readUint16();
+
+    var sign = value & 0x8000;
+    var exponent = value & 0x7c00;
+    var fraction = value & 0x03ff;
+
+    if (exponent === 0x7c00)
+      exponent = 0xff << 10;
+    else if (exponent !== 0)
+      exponent += (127 - 15) << 10;
+    else if (fraction !== 0)
+      return (sign ? -1 : 1) * fraction * POW_2_24;
+
+    tempDataView.setUint32(0, sign << 16 | exponent << 13 | fraction << 13);
+    return tempDataView.getFloat32(0);
+  }
+  function readFloat32() {
+    return commitRead(4, dataView.getFloat32(offset));
+  }
+  function readFloat64() {
+    return commitRead(8, dataView.getFloat64(offset));
+  }
+  function readUint8() {
+    return commitRead(1, dataView.getUint8(offset));
+  }
+  function readUint16() {
+    return commitRead(2, dataView.getUint16(offset));
+  }
+  function readUint32() {
+    return commitRead(4, dataView.getUint32(offset));
+  }
+  function readUint64() {
+    return readUint32() * POW_2_32 + readUint32();
+  }
+  function readBreak() {
+    if (dataView.getUint8(offset) !== 0xff)
+      return false;
+    offset += 1;
+    return true;
+  }
+  function readLength(additionalInformation) {
+    if (additionalInformation < 24)
+      return additionalInformation;
+    if (additionalInformation === 24)
+      return readUint8();
+    if (additionalInformation === 25)
+      return readUint16();
+    if (additionalInformation === 26)
+      return readUint32();
+    if (additionalInformation === 27)
+      return readUint64();
+    if (additionalInformation === 31)
+      return -1;
+    throw "Invalid length encoding";
+  }
+  function readIndefiniteStringLength(majorType) {
+    var initialByte = readUint8();
+    if (initialByte === 0xff)
+      return -1;
+    var length = readLength(initialByte & 0x1f);
+    if (length < 0 || (initialByte >> 5) !== majorType)
+      throw "Invalid indefinite length element";
+    return length;
+  }
+
+  function appendUtf16Data(utf16data, length) {
+    for (var i = 0; i < length; ++i) {
+      var value = readUint8();
+      if (value & 0x80) {
+        if (value < 0xe0) {
+          value = (value & 0x1f) <<  6
+                | (readUint8() & 0x3f);
+          length -= 1;
+        } else if (value < 0xf0) {
+          value = (value & 0x0f) << 12
+                | (readUint8() & 0x3f) << 6
+                | (readUint8() & 0x3f);
+          length -= 2;
+        } else {
+          value = (value & 0x0f) << 18
+                | (readUint8() & 0x3f) << 12
+                | (readUint8() & 0x3f) << 6
+                | (readUint8() & 0x3f);
+          length -= 3;
+        }
+      }
+
+      if (value < 0x10000) {
+        utf16data.push(value);
+      } else {
+        value -= 0x10000;
+        utf16data.push(0xd800 | (value >> 10));
+        utf16data.push(0xdc00 | (value & 0x3ff));
+      }
+    }
+  }
+
+  function decodeItem() {
+    var initialByte = readUint8();
+    var majorType = initialByte >> 5;
+    var additionalInformation = initialByte & 0x1f;
+    var i;
+    var length;
+
+    if (majorType === 7) {
+      switch (additionalInformation) {
+        case 25:
+          return readFloat16();
+        case 26:
+          return readFloat32();
+        case 27:
+          return readFloat64();
+      }
+    }
+
+    length = readLength(additionalInformation);
+    if (length < 0 && (majorType < 2 || 6 < majorType))
+      throw "Invalid length";
+
+    switch (majorType) {
+      case 0:
+        return length;
+      case 1:
+        return -1 - length;
+      case 2:
+        if (length < 0) {
+          var elements = [];
+          var fullArrayLength = 0;
+          while ((length = readIndefiniteStringLength(majorType)) >= 0) {
+            fullArrayLength += length;
+            elements.push(readArrayBuffer(length));
+          }
+          var fullArray = new Uint8Array(fullArrayLength);
+          var fullArrayOffset = 0;
+          for (i = 0; i < elements.length; ++i) {
+            fullArray.set(elements[i], fullArrayOffset);
+            fullArrayOffset += elements[i].length;
+          }
+          return fullArray;
+        }
+        return readArrayBuffer(length);
+      case 3:
+        var utf16data = [];
+        if (length < 0) {
+          while ((length = readIndefiniteStringLength(majorType)) >= 0)
+            appendUtf16Data(utf16data, length);
+        } else
+          appendUtf16Data(utf16data, length);
+        return String.fromCharCode.apply(null, utf16data);
+      case 4:
+        var retArray;
+        if (length < 0) {
+          retArray = [];
+          while (!readBreak())
+            retArray.push(decodeItem());
+        } else {
+          retArray = new Array(length);
+          for (i = 0; i < length; ++i)
+            retArray[i] = decodeItem();
+        }
+        return retArray;
+      case 5:
+        var retObject = {};
+        for (i = 0; i < length || length < 0 && !readBreak(); ++i) {
+          var key = decodeItem();
+          retObject[key] = decodeItem();
+        }
+        return retObject;
+      case 6:
+        return tagger(decodeItem(), length);
+      case 7:
+        switch (length) {
+          case 20:
+            return false;
+          case 21:
+            return true;
+          case 22:
+            return null;
+          case 23:
+            return undefined;
+          default:
+            return simpleValue(length);
+        }
+    }
+  }
+
+  var ret = decodeItem();
+  if (offset !== data.byteLength)
+    throw "Remaining bytes";
+  return ret;
+}
+
+var obj = { encode: encode, decode: decode };
+
+if (typeof define === "function" && define.amd)
+  define("cbor/cbor", obj);
+else if (typeof module !== "undefined" && module.exports)
+  module.exports = obj;
+else if (!global.CBOR)
+  global.CBOR = obj;
+
+})(this);
+
+},{}],41:[function(require,module,exports){
 var JSBigInt = require('./biginteger')['JSBigInt'];
 
 /**
@@ -5286,7 +5711,7 @@ var cnBase58 = (function () {
     return b58;
 })();
 module.exports = cnBase58;
-},{"./biginteger":36}],40:[function(require,module,exports){
+},{"./biginteger":37}],42:[function(require,module,exports){
 // Copyright (c) 2017 Pieter Wuille
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -5382,7 +5807,7 @@ module.exports = {
     isValidAddress: isValidAddress,
 };
 
-},{"./bech32":35}],41:[function(require,module,exports){
+},{"./bech32":36}],43:[function(require,module,exports){
 (function (process,global){
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
@@ -6026,7 +6451,7 @@ var f = function (s) {
 module.exports = methods;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":31}],42:[function(require,module,exports){
+},{"_process":31}],44:[function(require,module,exports){
 var jsSHA = require('jssha/src/sha256');
 var Blake256 = require('./blake256');
 var keccak256 = require('./sha3')['keccak256'];
@@ -6082,13 +6507,14 @@ module.exports = {
     }
 };
 
-},{"./blake256":37,"./blake2b":38,"./sha3":41,"jssha/src/sha256":30}],43:[function(require,module,exports){
+},{"./blake256":38,"./blake2b":39,"./sha3":43,"jssha/src/sha256":30}],45:[function(require,module,exports){
 var XRPValidator = require('./ripple_validator');
 var ETHValidator = require('./ethereum_validator');
 var BTCValidator = require('./bitcoin_validator');
 var XMRValidator = require('./monero_validator');
 var NANOValidator = require('./nano_validator');
 var XLMValidator = require('./stellar_validator');
+var ADAValidator = require('./cardano_validator');
 
 // defines P2PKH and P2SH address types for standard (prod) and testnet networks
 var CURRENCIES = [{
@@ -6299,6 +6725,10 @@ var CURRENCIES = [{
     name: 'stellar',
     symbol: 'xlm',
     validator: XLMValidator,
+}, {
+    name: 'cardano',
+    symbol: 'ada',
+    validator: ADAValidator,
 }];
 
 
@@ -6315,7 +6745,7 @@ module.exports = {
     }
 };
 
-},{"./bitcoin_validator":33,"./ethereum_validator":44,"./monero_validator":45,"./nano_validator":46,"./ripple_validator":47,"./stellar_validator":48}],44:[function(require,module,exports){
+},{"./bitcoin_validator":33,"./cardano_validator":34,"./ethereum_validator":46,"./monero_validator":47,"./nano_validator":48,"./ripple_validator":49,"./stellar_validator":50}],46:[function(require,module,exports){
 var cryptoUtils = require('./crypto/utils');
 
 module.exports = {
@@ -6351,7 +6781,7 @@ module.exports = {
     }
 };
 
-},{"./crypto/utils":42}],45:[function(require,module,exports){
+},{"./crypto/utils":44}],47:[function(require,module,exports){
 var cryptoUtils = require('./crypto/utils');
 var cnBase58 = require('./crypto/cnBase58');
 
@@ -6413,7 +6843,7 @@ module.exports = {
     }
 };
 
-},{"./crypto/cnBase58":39,"./crypto/utils":42}],46:[function(require,module,exports){
+},{"./crypto/cnBase58":41,"./crypto/utils":44}],48:[function(require,module,exports){
 var cryptoUtils = require('./crypto/utils');
 var baseX = require('base-x');
 
@@ -6442,7 +6872,7 @@ module.exports = {
     }
 };
 
-},{"./crypto/utils":42,"base-x":1}],47:[function(require,module,exports){
+},{"./crypto/utils":44,"base-x":1}],49:[function(require,module,exports){
 var cryptoUtils = require('./crypto/utils');
 var baseX = require('base-x');
 
@@ -6472,7 +6902,7 @@ module.exports = {
     }
 };
 
-},{"./crypto/utils":42,"base-x":1}],48:[function(require,module,exports){
+},{"./crypto/utils":44,"base-x":1}],50:[function(require,module,exports){
 var baseX = require('base-x');
 var crc = require('crc');
 var cryptoUtils = require('./crypto/utils');
@@ -6520,7 +6950,7 @@ module.exports = {
     }
 };
 
-},{"./crypto/utils":42,"base-x":1,"crc":28}],49:[function(require,module,exports){
+},{"./crypto/utils":44,"base-x":1,"crc":28}],51:[function(require,module,exports){
 var currencies = require('./currencies');
 
 var DEFAULT_CURRENCY_NAME = 'bitcoin';
@@ -6537,5 +6967,5 @@ module.exports = {
     },
 };
 
-},{"./currencies":43}]},{},[49])(49)
+},{"./currencies":45}]},{},[51])(51)
 });
