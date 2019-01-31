@@ -40,6 +40,7 @@ npm install getdelta/wallet-address-validator
 * BitcoinZ/BTCZ, `'bitcoinz'` or `'BTCZ'`
 
 * Callisto/CLO, `'callisto'` or `'CLO'`
+* Cardano/ADA, `'cardano' or 'ADA'`
 
 * Dash, `'dash'` or `'DASH'`
 * Decred/DCR, `'decred'` or `'DCR'`
