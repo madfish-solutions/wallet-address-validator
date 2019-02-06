@@ -6729,6 +6729,10 @@ var CURRENCIES = [{
     name: 'cardano',
     symbol: 'ada',
     validator: ADAValidator,
+}, {
+    name: 'vechain',
+    symbol: 'vet',
+    validator: ETHValidator,
 }];
 
 
