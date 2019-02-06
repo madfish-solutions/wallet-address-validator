@@ -82,6 +82,7 @@ npm install getdelta/wallet-address-validator
 * Snowgem/SNG, `'snowgem'` or `'SNG'`
 * Stellar/XLM, `'stellar'` or `'XLM'`
 
+* VeChain/VET, `'vechain'` or `'VET'`
 * Vertcoin/VTC, `'vertcoin'` or `'VTC'`
 
 * Votecoin/VTC, `'votecoin'` or `'VOT'`
