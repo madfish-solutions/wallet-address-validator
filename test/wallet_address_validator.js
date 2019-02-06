@@ -402,6 +402,11 @@ describe('WAValidator.validate()', function () {
             valid('DdzFFzCqrhsu8ZiYwD8EY7NdPVeCs87iMomsZxreWAJzeXwZEZtWGVVLDKHu5khHWKyEbtwWq58vkXzxhhcsRJiksXErhQivqHpQLrLz', 'cardano');
             valid('Ae2tdPwUPEYx4T3GnQH4XE632Z5ZCMJ5SLesNTEmuJJUQJRW9z1ty4F8qfc', 'cardano');
         });
+
+        it('should return true for correct vechain addresses', function () {
+            valid('0x6bf76c6f76e0971130e72055b6445ee10eabf48b', 'vechain');
+            valid('0x1671a3e4A2519A653E66E827ef6eaE690ee86729', 'vechain');
+        });
     });
 
     describe('invalid results', function () {
@@ -637,6 +642,12 @@ describe('WAValidator.validate()', function () {
             invalid('LdzFFzCqrht2DShg1SMD6ssDLLzSQM7g8MUSdcQM9Cf8M1DRjGC9Da4CfMabY4RxoVhdaGqmY2EHTfxLQqiqR2jFF5jQyqTKWGcx3KX3', 'cardano');
             invalid('DdzFFzCqrht2DShg1SMD6ssDLLzSQM7g8MUSdcQM9Cf8M1DRjGC9Da4CfMabY4Rx0VhdaGqmY2EHTfxLQqiqR2jFF5jQyqTKWGcx3KX3', 'cardano');
             invalid('DdzFFzCqrht2DShg1SMD6ssDLLzSQM7g8MUSdcQM9Cf8M1DRjGC9Da4CfMa', 'cardano');
+        });
+
+        it('should return false for incorrect vechain addresses', function () {
+            commonTests('vechain');
+            invalid('2a6bf76c6f76e0971130e72055b6445ee10eabf48b', 'vechain');
+            invalid('0x6bf76c6f76e0971130e72055b6445ee10eabf48', 'vechain');
         });
     });
 });
