@@ -18,6 +18,7 @@ var CURRENCIES = [{
 },{
     name: 'litecoin',
     symbol: 'ltc',
+    segwitHrp: 'ltc',
     addressTypes: {prod: ['30', '05', '32'], testnet: ['6f', 'c4', '3a']},
     validator: BTCValidator
 },{
