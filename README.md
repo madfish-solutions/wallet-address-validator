@@ -93,6 +93,8 @@ npm install getdelta/wallet-address-validator
 
 * ZenCash/ZEN, `'zencash'` or `'ZEN'`
 
+* TRON/TRX, `'tron'` or `'trx'`
+
 
 ### Usage example
 

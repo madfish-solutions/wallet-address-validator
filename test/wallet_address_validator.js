@@ -407,6 +407,11 @@ describe('WAValidator.validate()', function () {
             valid('0x6bf76c6f76e0971130e72055b6445ee10eabf48b', 'vechain');
             valid('0x1671a3e4A2519A653E66E827ef6eaE690ee86729', 'vechain');
         });
+
+        it('should return true for correct trx addresses', function () {
+            valid('TNDzfERDpxLDS2w1q6yaFC7pzqaSQ3Bg3r', 'trx');
+            valid('27bLJCYjbH6MT8DBF9xcrK6yZnm43vx7MNQ', 'trx', 'testnet');
+        });
     });
 
     describe('invalid results', function () {
