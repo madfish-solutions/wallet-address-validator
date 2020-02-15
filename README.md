@@ -1,15 +1,13 @@
 # wallet-address-validator
 Simple wallet address validator for validating Bitcoin and other altcoins addresses in **Node.js and browser**.
 
-Forked from [ryanralph/altcoin-address](https://github.com/ryanralph/altcoin-address).
-
-**File size is ~22 kB (minifed and gzipped)**.
+Forked from [ognus/wallet-address-validator](https://github.com/ognus/wallet-address-validator).
 
 ## Installation
 
 ### NPM
 ```
-npm install wallet-address-validator
+npm install getdelta/wallet-address-validator
 ```
 
 ### Browser
@@ -42,6 +40,7 @@ npm install wallet-address-validator
 * BitcoinZ/BTCZ, `'bitcoinz'` or `'BTCZ'`
 
 * Callisto/CLO, `'callisto'` or `'CLO'`
+* Cardano/ADA, `'cardano' or 'ADA'`
 
 * Dash, `'dash'` or `'DASH'`
 * Decred/DCR, `'decred'` or `'DCR'`
@@ -81,7 +80,9 @@ npm install wallet-address-validator
 * Ripple/XRP, `'ripple'` or `'XRP'`
 
 * Snowgem/SNG, `'snowgem'` or `'SNG'`
+* Stellar/XLM, `'stellar'` or `'XLM'`
 
+* VeChain/VET, `'vechain'` or `'VET'`
 * Vertcoin/VTC, `'vertcoin'` or `'VTC'`
 
 * Votecoin/VTC, `'votecoin'` or `'VOT'`
