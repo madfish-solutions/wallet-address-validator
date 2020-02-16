@@ -410,6 +410,7 @@ describe('WAValidator.validate()', function () {
 
         it('should return true for correct trx addresses', function () {
             valid('TNDzfERDpxLDS2w1q6yaFC7pzqaSQ3Bg3r', 'trx');
+            valid('41e825d52582eec346c839b4875376117904a76cbc', 'trx');
             valid('27bLJCYjbH6MT8DBF9xcrK6yZnm43vx7MNQ', 'trx', 'testnet');
         });
     });

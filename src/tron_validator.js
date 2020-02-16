@@ -46,6 +46,16 @@ module.exports = {
      * tron address validation
      */
     isValidAddress: function (mainAddress, currency, networkType) {
+        // Check if byteArray
+        if (mainAddress && mainAddress.byteLength !== undefined) {
+            if (mainAddress.length !== 21) {
+                return false;
+            }
+            return getEnv(currency, networkType) === mainAddress[0];
+        }
+        if (typeof mainAddress === 'string') {
+            if (mainAddress.length === 42 && mainAddress.startsWith('41')) return true;
+        }
         var address = decodeBase58Address(mainAddress);
 
         if (!address) {
