@@ -203,4 +203,4 @@ module.exports = {
     isValidAddress: function (address) {
       return validatePrefixedValue(address, [...implicitPrefix, ...contractPrefix, ...smartRollupPrefix]);
     }
-}
+};
