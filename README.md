@@ -95,6 +95,8 @@ npm install getdelta/wallet-address-validator
 
 * TRON/TRX, `'tron'` or `'trx'`
 
+* TEZOS/TEZ, `'tezos'` or `'tez'`
+
 
 ### Usage example
 

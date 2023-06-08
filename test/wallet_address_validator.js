@@ -413,6 +413,16 @@ describe('WAValidator.validate()', function () {
             valid('41e825d52582eec346c839b4875376117904a76cbc', 'trx');
             valid('27bLJCYjbH6MT8DBF9xcrK6yZnm43vx7MNQ', 'trx', 'testnet');
         });
+
+        it('should return true for correct tezos addresses', function () {
+            valid('tz1QZ6KY7d3BuZDT1d19dUxoQrtFPN2QJ3hn', 'tezos');
+            valid('KT1Fe71jyjrxFg9ZrYqtvaX7uQjcLo7svE4D', 'tezos');
+            valid('tz2TSvNTh2epDMhZHrw73nV9piBX7kLZ9K9m', 'tezos');
+            valid('tz3VEZ4k6a4Wx42iyev6i2aVAptTRLEAivNN', 'tezos');
+            valid('KT1Fe71jyjrxFg9ZrYqtvaX7uQjcLo7svE4D%test', 'tezos');
+            valid('tz4EECtMxAuJ9UDLaiMZH7G1GCFYUWsj8HZn', 'tezos');
+            valid('sr166cywS6HJx9gmqMU28Vo284gPQaPcGmYW', 'tezos');
+        });
     });
 
     describe('invalid results', function () {
@@ -654,6 +664,21 @@ describe('WAValidator.validate()', function () {
             commonTests('vechain');
             invalid('2a6bf76c6f76e0971130e72055b6445ee10eabf48b', 'vechain');
             invalid('0x6bf76c6f76e0971130e72055b6445ee10eabf48', 'vechain');
+        });
+
+        it('should return false for incorrect tezos addresses', function () {
+            commonTests('tezos');
+            invalid('tz1QZ6KY7d3BuZDT1d19dUxoQrtFPN2QJ3hm', 'tezos');
+            invalid('KT1Fe71jyjrxFg9ZrYqtvaX7uQjcLo7sp', 'tezos');
+            invalid('tz1', 'tezos');
+            invalid('tz2', 'tezos');
+            invalid('tz3', 'tezos');
+            invalid('KT1', 'tezos');
+            invalid('tz4', 'tezos');
+            invalid('test', 'tezos');
+            invalid('', 'tezos');
+            invalid('tz2TSvNTh2epDMhZHrw73nV9piBX7kLZ9K9mAAAAAAAAAA', 'tezos');
+            invalid('sr166cywS6HJx9gmqMU28Vo284gPQaPcGmY1', 'tezos');
         });
     });
 });
