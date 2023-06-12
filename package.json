@@ -33,7 +33,7 @@
     "browser",
     "nodejs"
   ],
-  "version": "0.4.1",
+  "version": "0.4.2",
   "author": "Inokentii Mazhara <keshan3262@gmail.com>",
   "homepage": "https://github.com/madfish-solutions/wallet-address-validator",
   "license": "MIT",
