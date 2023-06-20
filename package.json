@@ -1,5 +1,5 @@
 {
-  "name": "@keshan3262/wallet-address-validator",
+  "name": "@temple-wallet/wallet-address-validator",
   "description": "Wallet address validator for Bitcoin and other Altcoins.",
   "keywords": [
     "btc",
