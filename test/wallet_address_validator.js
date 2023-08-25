@@ -5,12 +5,12 @@ var chai = isNode ? require('chai') : window.chai,
 
 var WAValidator = isNode ? require('../src/wallet_address_validator') : window.WAValidator;
 
-function valid (address, currency, networkType) {
+function valid(address, currency, networkType) {
     var result = WAValidator.validate(address, currency, networkType);
     expect(result).to.be.true;
 }
 
-function invalid (address, currency, networkType) {
+function invalid(address, currency, networkType) {
     var result = WAValidator.validate(address, currency, networkType);
     expect(result).to.be.false;
 }
@@ -39,22 +39,12 @@ describe('WAValidator.validate()', function () {
 
             // segwit addresses
             valid('BC1QW508D6QEJXTDG4Y5R3ZARVARY0C5XW7KV8F3T4', 'bitcoin');
-            valid('tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sl5k7', 'bitcoin');
-            valid('bc1pw508d6qejxtdg4y5r3zarvary0c5xw7kw508d6qejxtdg4y5r3zarvary0c5xw7k7grplx', 'bitcoin');
-            valid('BC1SW50QA3JX3S', 'bitcoin');
-            valid('bc1zw508d6qejxtdg4y5r3zarvaryvg6kdaj', 'bitcoin');
-            valid('tb1qqqqqp399et2xygdj5xreqhjjvcmzhxw4aywxecjdzew6hylgvsesrxh6hy', 'bitcoin');
-
-            invalid("tc1qw508d6qejxtdg4y5r3zarvary0c5xw7kg3g4ty", 'bitcoin'),
-            invalid("bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t5", 'bitcoin'),
-            invalid("BC13W508D6QEJXTDG4Y5R3ZARVARY0C5XW7KN40WF2", 'bitcoin'),
-            invalid("bc1rw5uspcuh", 'bitcoin'),
-            invalid("bc10w508d6qejxtdg4y5r3zarvary0c5xw7kw508d6qejxtdg4y5r3zarvary0c5xw7kw5rljs90", 'bitcoin'),
-            invalid("BC1QR508D6QEJXTDG4Y5R3ZARVARYV98GJ9P", 'bitcoin'),
-            invalid("tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sL5k7", 'bitcoin'),
-            invalid("bc1zw508d6qejxtdg4y5r3zarvaryvqyzf3du", 'bitcoin'),
-            invalid("tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3pjxtptv", 'bitcoin'),
-            invalid("bc1gmk9yu", 'bitcoin')
+            valid('bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq', 'bitcoin');
+            valid('bc1q42lja79elem0anu8q8s3h2n687re9jax556pcc', 'bitcoin');
+            valid('tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sl5k7', 'bitcoin', 'testnet');
+            valid('tb1pqqqqp399et2xygdj5xreqhjjvcmzhxw4aywxecjdzew6hylgvsesf3hn0c', 'bitcoin', 'testnet');
+            valid('bc1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vqzk5jj0', 'bitcoin');
+            valid('bc1peu5hzzyj8cnqm05le6ag7uwry0ysmtf3v4uuxv3v8hqhvsatca8ss2vuwx', 'bitcoin');
         });
 
         it('should return true for correct bitcoincash addresses', function () {
@@ -440,6 +430,17 @@ describe('WAValidator.validate()', function () {
 
         it('should return false for incorrect bitcoin addresses', function () {
             commonTests('bitcoin');
+            invalid("tc1qw508d6qejxtdg4y5r3zarvary0c5xw7kg3g4ty", 'bitcoin');
+            invalid("bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t5", 'bitcoin');
+            invalid("BC13W508D6QEJXTDG4Y5R3ZARVARY0C5XW7KN40WF2", 'bitcoin');
+            invalid("bc1rw5uspcuh", 'bitcoin');
+            invalid("bc10w508d6qejxtdg4y5r3zarvary0c5xw7kw508d6qejxtdg4y5r3zarvary0c5xw7kw5rljs90", 'bitcoin');
+            invalid("BC1QR508D6QEJXTDG4Y5R3ZARVARYV98GJ9P", 'bitcoin');
+            invalid("tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sL5k7", 'bitcoin');
+            invalid("bc1zw508d6qejxtdg4y5r3zarvaryvqyzf3du", 'bitcoin');
+            invalid("tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3pjxtptv", 'bitcoin');
+            invalid("bc1gmk9yu", 'bitcoin');
+            invalid('bc1pw508d6qejxtdg4y5r3zarvary0c5xw7kw508d6qejxtdg4y5r3zarvary0c5xw7k7grplx', 'bitcoin');
         });
 
         it('should return false for incorrect bitcoincash addresses', function () {
